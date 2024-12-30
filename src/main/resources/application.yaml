@@ -7,7 +7,7 @@ spring:
       auto-index-creation: true
 
 server:
-  port: ${PORT:9099}
+  port: ${PORT:10000}  
 
 jwt:
   secret: ${JWT_SECRET}
