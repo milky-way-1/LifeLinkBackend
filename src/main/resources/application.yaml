@@ -4,6 +4,7 @@ spring:
   data:
     mongodb:
       uri: ${MONGODB_URI}
+      database: lifelink 
       auto-index-creation: true
 
 server:
