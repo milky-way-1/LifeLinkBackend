@@ -1,0 +1,10 @@
+[build]
+builder = "NIXPACKS"
+buildCommand = "./mvnw clean package -DskipTests"
+
+[deploy]
+startCommand = "java -jar target/*.jar"
+restartPolicyType = "ON_FAILURE"
+
+[service]
+port = "9099"
