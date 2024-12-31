@@ -49,10 +49,12 @@ public class SecurityConfig {
                 // Public endpoints
                 .requestMatchers("/api/auth/**").permitAll()
                 .requestMatchers("/api/test/**").permitAll()
+                .requestMatchers("/api/health/**").permitAll()
                 .requestMatchers("/error").permitAll()
                 
                 // Role-based authorization
                 .requestMatchers("/api/patient/**").hasRole("PATIENT")
+                .requestMatchers("/api/insurance/**").hasRole("PATIENT")
                 .requestMatchers("/api/hospital/**").hasRole("HOSPITAL")
                 .requestMatchers("/api/ambulance/**").hasRole("AMBULANCE_DRIVER")
                 .requestMatchers("/api/bloodbank/**").hasRole("BLOOD_BANK")
