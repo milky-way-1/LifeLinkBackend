@@ -60,9 +60,14 @@ public class Insurance {
     @NotNull
     private String userId;  
 
-    @CreatedDate
     private LocalDateTime createdAt;
 
-    @LastModifiedDate
     private LocalDateTime lastUpdatedAt;
+    
+    public void initializeTimestamps() {
+        if (createdAt == null) {
+            createdAt = LocalDateTime.now();
+        }
+        lastUpdatedAt = LocalDateTime.now();
+    }
 }

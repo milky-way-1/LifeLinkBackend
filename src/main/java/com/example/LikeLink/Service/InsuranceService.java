@@ -42,9 +42,11 @@ public class InsuranceService {
                 .planType(request.getPlanType())
                 .coversEmergencyService(request.isCoversEmergencyService())
                 .coversAmbulanceService(request.isCoversAmbulanceService())
-                .userId(user.getId())  // Store user ID instead of User object
+                .userId(user.getId())
                 .build();
 
+        insurance.initializeTimestamps();
+        
         Insurance savedInsurance = insuranceRepository.save(insurance);
         return mapToResponse(savedInsurance);
     }
@@ -70,11 +72,7 @@ public class InsuranceService {
     }
 
     public InsuranceResponse updateInsurance(String insuranceId, InsuranceRequest request, String userEmail) {
-        User user = userRepository.findByEmail(userEmail)
-                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
-
-        Insurance insurance = insuranceRepository.findByIdAndUserId(insuranceId, user.getId())
-                .orElseThrow(() -> new ResourceNotFoundException("Insurance not found"));
+        Insurance insurance = getInsuranceForUser(insuranceId, userEmail);
 
         insurance.setInsuranceProviderName(request.getInsuranceProviderName());
         insurance.setPolicyNumber(request.getPolicyNumber());
@@ -88,6 +86,8 @@ public class InsuranceService {
         insurance.setCoversEmergencyService(request.isCoversEmergencyService());
         insurance.setCoversAmbulanceService(request.isCoversAmbulanceService());
 
+        insurance.initializeTimestamps();
+        
         Insurance updatedInsurance = insuranceRepository.save(insurance);
         return mapToResponse(updatedInsurance);
     }
@@ -165,8 +165,8 @@ public class InsuranceService {
                 .planType(insurance.getPlanType())
                 .coversEmergencyService(insurance.isCoversEmergencyService())
                 .coversAmbulanceService(insurance.isCoversAmbulanceService())
-                .createdAt(insurance.getCreatedAt().toString())
-                .lastUpdatedAt(insurance.getLastUpdatedAt().toString())
+                .createdAt(insurance.getCreatedAt() != null ? insurance.getCreatedAt().toString() : null)
+                .lastUpdatedAt(insurance.getLastUpdatedAt() != null ? insurance.getLastUpdatedAt().toString() : null)
                 .build();
     }
 }
