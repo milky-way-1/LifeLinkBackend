@@ -83,23 +83,6 @@ public class AmbulanceController {
         }
     }
 
-    @PutMapping("/status")
-    @PreAuthorize("hasRole('AMBULANCE_DRIVER')")
-    public ResponseEntity<?> updateStatus(
-            @RequestParam boolean available,
-            Authentication authentication) {
-        try {
-            String email = authentication.getName();
-            log.info("Updating status for driver: {} to: {}", email, available);
-            driverService.updateDriverStatus(email, available);
-            return ResponseEntity.ok(new ApiResponse<>(true, "Status updated successfully", available));
-        } catch (DriverNotFoundException e) {
-            log.error("Status update failed: {}", e.getMessage());
-            return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body(new ApiResponse<>(false, e.getMessage(), null));
-        }
-    }
-
     @PutMapping("/location")
     @PreAuthorize("hasRole('AMBULANCE_DRIVER')")
     public ResponseEntity<?> updateLocation(

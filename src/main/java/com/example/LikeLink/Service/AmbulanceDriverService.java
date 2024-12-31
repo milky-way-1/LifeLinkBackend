@@ -59,11 +59,7 @@ public class AmbulanceDriverService {
         driver.setHasStretcher(dto.isHasStretcher());
         driver.setInsurancePolicyNumber(dto.getInsurancePolicyNumber());
         driver.setInsuranceExpiryDate(dto.getInsuranceExpiryDate());
-
-        // Set default values
-        driver.setAvailable(true);
-        driver.setVerificationStatus(VerificationStatus.PENDING);
-        driver.setCurrentLocation(new Location(0.0, 0.0)); // Default location
+        driver.setCurrentLocation(new Location(0.0, 0.0)); 
 
         log.info("Saving new driver profile for: {}", dto.getFullName());
         return driverRepository.save(driver);
@@ -132,7 +128,6 @@ public class AmbulanceDriverService {
     @Transactional
     public void updateDriverStatus(String email, boolean available) {
         AmbulanceDriver driver = getDriverByEmail(email);
-        driver.setAvailable(available);
         driverRepository.save(driver);
         log.info("Updated status for driver: {} to: {}", email, available);
     }
@@ -163,7 +158,6 @@ public class AmbulanceDriverService {
         AmbulanceDriver driver = driverRepository.findByDriversLicenseNumber(licenseNumber)
                 .orElseThrow(() -> new DriverNotFoundException("Driver not found with license: " + licenseNumber));
 
-        driver.setVerificationStatus(status);
         
         AmbulanceDriver updatedDriver = driverRepository.save(driver);
         log.info("Updated verification status for driver: {} to: {}", licenseNumber, status);

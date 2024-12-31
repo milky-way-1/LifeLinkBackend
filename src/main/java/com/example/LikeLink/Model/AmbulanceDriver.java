@@ -83,34 +83,17 @@ public class AmbulanceDriver {
     @Pattern(regexp = "\\d{4}-\\d{2}-\\d{2}", message = "Date should be in YYYY-MM-DD format")
     private String insuranceExpiryDate;
 
-    private boolean isAvailable = true;
-
     @NotNull(message = "Current location is required")
     private Location currentLocation;
-
-    private String profileImageUrl;
 
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 
-    private VerificationStatus verificationStatus = VerificationStatus.PENDING;
-    
-
-    @AssertTrue(message = "Insurance must not be expired")
-    private boolean isInsuranceValid() {
-        if (insuranceExpiryDate == null) return false;
-        LocalDate expiryDate = LocalDate.parse(insuranceExpiryDate);
-        return expiryDate.isAfter(LocalDate.now());
-    }
 
     public void updateLocation(Double latitude, Double longitude) {
         this.currentLocation = new Location(latitude, longitude);
     }
-    public boolean isEligibleForService() {
-        return verificationStatus == VerificationStatus.VERIFIED &&
-               isAvailable &&
-               isInsuranceValid();
-    }
+
 
     @Component
     public class AmbulanceDriverListener extends AbstractMongoEventListener<AmbulanceDriver> {
