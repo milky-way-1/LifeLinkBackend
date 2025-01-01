@@ -29,30 +29,30 @@ public class DriverLocationService {
     private static final double DEFAULT_SEARCH_RADIUS_KM = 5.0;
 
     public void updateDriverLocation(String driverId, double latitude, double longitude) {
-        AmbulanceDriver driver = driverRepository.findById(driverId)
-            .orElseThrow(() -> new RuntimeException("Driver not found"));
+        try {
+            AmbulanceDriver driver = driverRepository.findById(driverId)
+                .orElseThrow(() -> new RuntimeException("Driver not found"));
+
+            Location location = new Location(latitude, longitude);
+            driver.setCurrentLocation(location);
+            driverRepository.save(driver);
             
-        Location location = new Location(latitude, longitude);
-        driver.setCurrentLocation(location);
-        
-        driverRepository.save(driver);
-        log.info("Updated location for driver {}: [{}, {}]", driverId, longitude, latitude);
+            log.info("Updated location for driver {}: [{}, {}]", driverId, longitude, latitude);
+        } catch (Exception e) {
+            log.error("Error updating driver location: " + e.getMessage(), e);
+            throw e;
+        }
     }
 
     public List<AmbulanceDriver> findNearbyDrivers(double latitude, double longitude, double radiusKm) {
-        // Convert kilometers to meters for MongoDB
-        double radiusInMeters = radiusKm * 1000;
-        
-        List<AmbulanceDriver> drivers = driverRepository.findNearbyDrivers(
-            longitude, 
-            latitude, 
-            radiusInMeters
-        );
-        
-        log.info("Found {} drivers within {}km of [{}, {}]", 
-            drivers.size(), radiusKm, longitude, latitude);
-            
-        return drivers;
+        try {
+            // Convert km to meters
+            double radiusInMeters = radiusKm * 1000;
+            return driverRepository.findNearbyDrivers(longitude, latitude, radiusInMeters);
+        } catch (Exception e) {
+            log.error("Error finding nearby drivers: " + e.getMessage(), e);
+            throw e;
+        }
     }
 
     public Optional<AmbulanceDriver> findNearestDriver(Double latitude, Double longitude) {

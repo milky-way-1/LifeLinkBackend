@@ -22,19 +22,15 @@ public interface AmbulanceDriverRepository extends MongoRepository<AmbulanceDriv
     Optional<AmbulanceDriver> findByInsurancePolicyNumber(String policyNumber);
     
    
-    @Query("{'currentLocation': {" +
-            " $nearSphere: {" +
-            "    $geometry: {" +
-            "      type: 'Point'," +
-            "      coordinates: [?0, ?1]" +
-            "    }," +
-            "    $maxDistance: ?2" +
-            "  }" +
-            "}}")
+    @Query("{ 'currentLocation': { " +
+            "$near: { " +
+            "  $geometry: { " +
+            "    type: 'Point', " +
+            "    coordinates: [?0, ?1] " +
+            "  }, " +
+            "  $maxDistance: ?2 " +
+            "} } }")
      List<AmbulanceDriver> findNearbyDrivers(double longitude, double latitude, double maxDistance);
-    
-    @Query("{ 'currentLocation.coordinates': { $geoWithin: { $centerSphere: [ [?1, ?0], ?2 ] } } }")
-    List<AmbulanceDriver> findDriversWithinRadius(Double latitude, Double longitude, Double radiusInRadians);
     
     
     boolean existsByEmail(String email);

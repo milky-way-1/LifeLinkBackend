@@ -20,45 +20,28 @@ import com.mongodb.client.model.IndexOptions;
 
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 @Configuration
-@EnableMongoRepositories(basePackages = "com.example.LikeLink.Repository")
-@RequiredArgsConstructor
+@Slf4j
 public class MongoConfig {
 
-    private final MongoDatabaseFactory mongoDbFactory;
+    @Autowired
     private MongoTemplate mongoTemplate;
 
-    @Bean
-    public MongoTemplate mongoTemplate() {
-        if (mongoTemplate == null) {
-            mongoTemplate = new MongoTemplate(mongoDbFactory);
-        }
-        return mongoTemplate;
-    }
-
-    @Bean
-    public AuditorAware<String> auditorProvider() {
-        return () -> Optional.of("system");
-    }
-    
     @PostConstruct
-    public void initializeIndexes() {
+    public void initIndexes() {
         try {
-            MongoDatabase database = mongoTemplate.getDb();
-            
-            // Drop existing indexes on the collection
-            database.getCollection("ambulance_drivers").dropIndexes();
+            // Drop existing index
+            mongoTemplate.indexOps("ambulance_drivers").dropIndex("currentLocation_2dsphere");
             
             // Create new 2dsphere index
-            Document index = new Document();
-            index.put("currentLocation", "2dsphere");
+            GeospatialIndex geospatialIndex = new GeospatialIndex("currentLocation");
+            mongoTemplate.indexOps("ambulance_drivers").ensureIndex(geospatialIndex);
             
-            database.getCollection("ambulance_drivers")
-                   .createIndex(index);
-            
-        } catch (Exception e) { 
-        	e.printStackTrace();
+            log.info("Successfully created 2dsphere index on currentLocation");
+        } catch (Exception e) {
+            log.error("Error creating MongoDB indexes: " + e.getMessage(), e);
         }
     }
 }
