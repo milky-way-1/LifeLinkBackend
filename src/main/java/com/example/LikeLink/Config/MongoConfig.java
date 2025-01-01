@@ -41,8 +41,14 @@ public class MongoConfig {
     
     @PostConstruct
     public void initIndexes() {
-        mongoTemplate.indexOps("ambulance_drivers").ensureIndex(
-            new GeospatialIndex("currentLocation").typed(GeoSpatialIndexType.GEO_2DSPHERE)
-        );
+        try {
+            // Create 2dsphere index for driver locations
+            GeospatialIndex driverLocationIndex = new GeospatialIndex("currentLocation");
+            driverLocationIndex.typed(GeoSpatialIndexType.GEO_2DSPHERE);
+            mongoTemplate.indexOps("ambulance_drivers").ensureIndex(driverLocationIndex);
+
+        } catch (Exception e) {
+            // Don't throw the exception - allow application to start without indexes
+        }
     }
 }
