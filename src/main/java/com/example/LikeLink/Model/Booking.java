@@ -6,6 +6,7 @@ import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import com.example.LikeLink.Enum.BookingStatus;
+import com.example.LikeLink.dto.request.LocationRequest;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -21,8 +22,8 @@ public class Booking {
     
     private String userId;
     private String driverId;
-    private Location pickupLocation;
-    private Location destinationLocation;
+    private LocationRequest pickupLocation;
+    private LocationRequest destinationLocation;
     private BookingStatus status;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
