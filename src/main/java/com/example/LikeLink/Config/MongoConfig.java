@@ -20,28 +20,26 @@ import com.mongodb.client.model.IndexOptions;
 
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 
 @Configuration
-@Slf4j
+@EnableMongoRepositories(basePackages = "com.example.LikeLink.Repository")
+@RequiredArgsConstructor
 public class MongoConfig {
 
-    @Autowired
+    private final MongoDatabaseFactory mongoDbFactory;
     private MongoTemplate mongoTemplate;
 
-    @PostConstruct
-    public void initIndexes() {
-        try {
-            // Drop existing index
-            mongoTemplate.indexOps("ambulance_drivers").dropIndex("currentLocation_2dsphere");
-            
-            // Create new 2dsphere index
-            GeospatialIndex geospatialIndex = new GeospatialIndex("currentLocation");
-            mongoTemplate.indexOps("ambulance_drivers").ensureIndex(geospatialIndex);
-            
-            log.info("Successfully created 2dsphere index on currentLocation");
-        } catch (Exception e) {
-            log.error("Error creating MongoDB indexes: " + e.getMessage(), e);
+    @Bean
+    public MongoTemplate mongoTemplate() {
+        if (mongoTemplate == null) {
+            mongoTemplate = new MongoTemplate(mongoDbFactory);
         }
+        return mongoTemplate;
     }
+
+    @Bean
+    public AuditorAware<String> auditorProvider() {
+        return () -> Optional.of("system");
+    }
+   
 }

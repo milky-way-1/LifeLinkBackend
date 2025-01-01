@@ -21,7 +21,8 @@ public interface AmbulanceDriverRepository extends MongoRepository<AmbulanceDriv
     
     Optional<AmbulanceDriver> findByInsurancePolicyNumber(String policyNumber);
     
-    List<AmbulanceDriver> findAllAvailableDrivers();
+    @Query("{ 'currentLocation': { $exists: true, $ne: null }, 'currentLocation.coordinates': { $exists: true, $ne: null } }")
+    List<AmbulanceDriver> findAllActiveDrivers();
 
     
     boolean existsByEmail(String email);
