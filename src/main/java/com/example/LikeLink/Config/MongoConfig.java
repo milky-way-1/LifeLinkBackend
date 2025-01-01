@@ -37,13 +37,4 @@ public class MongoConfig {
     public AuditorAware<String> auditorProvider() {
         return () -> Optional.of("system");
     }
-
-    @PostConstruct
-    public void initIndexes() {
-        mongoTemplate = mongoTemplate();
-        
-        // Create geospatial index for currentLocation.coordinates
-        GeospatialIndex index = new GeospatialIndex("currentLocation.coordinates");
-        mongoTemplate.indexOps(AmbulanceDriver.class).ensureIndex(index);
-    }
 }

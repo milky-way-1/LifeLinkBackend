@@ -1,11 +1,9 @@
 package com.example.LikeLink.Enum;
 
 public enum BookingStatus {
-    PENDING,      // Initial request
-    SEARCHING,    // Looking for drivers
-    ACCEPTED,     // Driver accepted
-    ARRIVED,      // Driver arrived at pickup
-    IN_PROGRESS,  // Journey started
-    COMPLETED,    // Journey completed
-    CANCELLED    // Booking cancelled
+    PENDING,    // Initial state when booking is created
+    SEARCHING,  // Looking for drivers
+    ASSIGNED,   // Driver has been assigned
+    COMPLETED,  // Journey completed
+    CANCELLED// Booking cancelled
 }
