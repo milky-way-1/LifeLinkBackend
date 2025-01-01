@@ -19,6 +19,8 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
 
+import org.springframework.data.mongodb.core.index.GeoSpatialIndexType;
+import org.springframework.data.mongodb.core.index.GeoSpatialIndexed;
 import org.springframework.data.mongodb.core.index.Indexed;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -83,7 +85,7 @@ public class AmbulanceDriver {
     @Pattern(regexp = "\\d{4}-\\d{2}-\\d{2}", message = "Date should be in YYYY-MM-DD format")
     private String insuranceExpiryDate;
 
-    @NotNull(message = "Current location is required")
+    @GeoSpatialIndexed(type = GeoSpatialIndexType.GEO_2DSPHERE)
     private Location currentLocation;
 
     private LocalDateTime createdAt;

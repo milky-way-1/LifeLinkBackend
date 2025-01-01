@@ -9,6 +9,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.data.domain.AuditorAware;
 import org.springframework.data.mongodb.MongoDatabaseFactory;
 import org.springframework.data.mongodb.core.MongoTemplate;
+import org.springframework.data.mongodb.core.index.GeoSpatialIndexType;
 import org.springframework.data.mongodb.core.index.GeospatialIndex;
 import org.springframework.data.mongodb.repository.config.EnableMongoRepositories;
 
@@ -36,5 +37,12 @@ public class MongoConfig {
     @Bean
     public AuditorAware<String> auditorProvider() {
         return () -> Optional.of("system");
+    }
+    
+    @PostConstruct
+    public void initIndexes() {
+        mongoTemplate.indexOps("ambulance_drivers").ensureIndex(
+            new GeospatialIndex("currentLocation").typed(GeoSpatialIndexType.GEO_2DSPHERE)
+        );
     }
 }
