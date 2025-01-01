@@ -21,17 +21,8 @@ public interface AmbulanceDriverRepository extends MongoRepository<AmbulanceDriv
     
     Optional<AmbulanceDriver> findByInsurancePolicyNumber(String policyNumber);
     
-   
-    @Query("{ 'currentLocation': { " +
-            "$near: { " +
-            "  $geometry: { " +
-            "    type: 'Point', " +
-            "    coordinates: [?0, ?1] " +
-            "  }, " +
-            "  $maxDistance: ?2 " +
-            "} } }")
-     List<AmbulanceDriver> findNearbyDrivers(double longitude, double latitude, double maxDistance);
-    
+    List<AmbulanceDriver> findAllAvailableDrivers();
+
     
     boolean existsByEmail(String email);
     

@@ -31,7 +31,7 @@ public class BookingController {
     @PostMapping("/request")
     public ResponseEntity<?> requestAmbulance(@Valid @RequestBody BookingRequest request) {
         try {
-            BookingResponse response = bookingService.processBookingRequest(request);
+            BookingResponse response = bookingService.processBooking(request);
             return ResponseEntity.ok(response);
         } catch (Exception e) {
             log.error("Error processing booking request", e);

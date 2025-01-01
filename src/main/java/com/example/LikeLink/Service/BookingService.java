@@ -4,6 +4,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.example.LikeLink.Enum.BookingStatus;
+import com.example.LikeLink.Exception.BookingException;
 import com.example.LikeLink.Model.AmbulanceDriver;
 import com.example.LikeLink.Model.Booking;
 import com.example.LikeLink.Model.Location;
@@ -25,28 +26,42 @@ public class BookingService {
     private final BookingRepository bookingRepository;
     private final DriverLocationService driverLocationService;
     private static final double SEARCH_RADIUS_KM = 5.0;
+    
+    
+    private List<AmbulanceDriver> findNearbyDrivers(Location pickupLocation) {
+        try {
+            if (pickupLocation == null || pickupLocation.getCoordinates() == null) {
+                throw new BookingException("Invalid pickup location");
+            }
+
+            List<AmbulanceDriver> drivers = driverLocationService.findNearbyDrivers(
+                    pickupLocation.getLatitude(),
+                pickupLocation.getLongitude()
+            );
+            
+            log.info("Found {} drivers within {}km", drivers.size(), SEARCH_RADIUS_KM);
+            return drivers;
+
+        } catch (Exception e) {
+            log.error("Error finding nearby drivers: {}", e.getMessage(), e);
+            throw new BookingException("Unable to find nearby drivers", e);
+        }
+    }
+   
 
     @Transactional
-    public BookingResponse processBookingRequest(BookingRequest request) {
+    public BookingResponse processBooking(BookingRequest request) {
         try {
-            // Create and save initial booking
-            Booking booking = new Booking();
-            booking.setUserId(request.getUserId());
-            booking.setPickupLocation(request.getPickupLocation());
-            booking.setDestinationLocation(request.getDestinationLocation());
-            booking.setStatus(BookingStatus.SEARCHING);
-            booking.setCreatedAt(LocalDateTime.now());
-            booking.setUpdatedAt(LocalDateTime.now());
+            log.info("Processing booking request for user: {}", request.getUserId());
             
-            Booking savedBooking = bookingRepository.save(booking);
+            validateBookingRequest(request); 
+            
+            Booking booking = new Booking();
 
-            // Find nearby drivers
-            List<AmbulanceDriver> nearbyDrivers = driverLocationService.findNearbyDrivers(
-                request.getPickupLocation().getLatitude(),
-                request.getPickupLocation().getLongitude(),
-                SEARCH_RADIUS_KM
-            );
-
+            List<AmbulanceDriver> nearbyDrivers = findNearbyDrivers(request.getPickupLocation());
+            if (nearbyDrivers.isEmpty()) {
+                throw new BookingException("No drivers available in your area");
+            }
             if (nearbyDrivers.isEmpty()) {
                 booking.setStatus(BookingStatus.CANCELLED);
                 bookingRepository.save(booking);
@@ -59,9 +74,11 @@ public class BookingService {
                 request.getPickupLocation()
             );
 
-            // Assign booking to nearest driver
             booking.setDriverId(nearestDriver.getId());
             booking.setStatus(BookingStatus.ASSIGNED);
+            booking.setPickupLocation(request.getPickupLocation()); 
+            booking.setDestinationLocation(request.getDestinationLocation()); 
+            booking.setUserId(request.getUserId());
             bookingRepository.save(booking);
 
             return new BookingResponse(
@@ -76,6 +93,28 @@ public class BookingService {
         } catch (Exception e) {
             log.error("Error processing booking request", e);
             throw new RuntimeException("Failed to process booking request", e);
+        }
+    }
+    
+    private void validateBookingRequest(BookingRequest request) {
+        if (request == null) {
+            throw new BookingException("Booking request cannot be null");
+        }
+        
+        if (request.getUserId() == null || request.getUserId().trim().isEmpty()) {
+            throw new BookingException("User ID is required");
+        }
+        
+        if (request.getPickupLocation() == null || 
+            request.getPickupLocation().getCoordinates() == null || 
+            request.getPickupLocation().getCoordinates().length != 2) {
+            throw new BookingException("Invalid pickup location");
+        }
+
+        if (request.getDestinationLocation() == null || 
+            request.getDestinationLocation().getCoordinates() == null || 
+            request.getDestinationLocation().getCoordinates().length != 2) {
+            throw new BookingException("Invalid drop location");
         }
     }
 
