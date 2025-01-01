@@ -21,12 +21,10 @@ public interface AmbulanceDriverRepository extends MongoRepository<AmbulanceDriv
     
     Optional<AmbulanceDriver> findByInsurancePolicyNumber(String policyNumber);
     
-    List<AmbulanceDriver> findByIsAvailableTrue();
-    
+   
     @Query("{'currentLocation': {$near: {$geometry: {type: 'Point', coordinates: [?0, ?1]}, $maxDistance: ?2}}}")
     List<AmbulanceDriver> findNearbyDrivers(double longitude, double latitude, double maxDistance);
     
-    List<AmbulanceDriver> findByVerificationStatus(VerificationStatus status);
     
     boolean existsByEmail(String email);
     
@@ -34,6 +32,4 @@ public interface AmbulanceDriverRepository extends MongoRepository<AmbulanceDriv
     
     boolean existsByDriversLicenseNumber(String licenseNumber);
     
-    @Query("{'currentLocation': {$near: {$geometry: {type: 'Point', coordinates: [?0, ?1]}, $maxDistance: ?2}}, 'isAvailable': true, 'verificationStatus': 'VERIFIED'}")
-    List<AmbulanceDriver> findAvailableNearbyDrivers(double longitude, double latitude, double maxDistance);
 }
