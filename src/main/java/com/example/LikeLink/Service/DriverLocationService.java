@@ -48,7 +48,7 @@ public class DriverLocationService {
     public List<AmbulanceDriver> findNearbyDrivers(double latitude, double longitude) {
         try {
             // Get all available drivers
-            List<AmbulanceDriver> allDrivers = driverRepository.findAllAvailableDrivers();
+            List<AmbulanceDriver> allDrivers = driverRepository.findAll();
             
             // Calculate distances and filter nearby drivers
             return allDrivers.stream()
