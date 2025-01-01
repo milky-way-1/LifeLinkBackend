@@ -3,6 +3,7 @@ package com.example.LikeLink.Config;
 
 import java.util.Optional;
 
+import org.bson.Document;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -14,6 +15,8 @@ import org.springframework.data.mongodb.core.index.GeospatialIndex;
 import org.springframework.data.mongodb.repository.config.EnableMongoRepositories;
 
 import com.example.LikeLink.Model.AmbulanceDriver;
+import com.mongodb.client.MongoDatabase;
+import com.mongodb.client.model.IndexOptions;
 
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
@@ -40,15 +43,22 @@ public class MongoConfig {
     }
     
     @PostConstruct
-    public void initIndexes() {
+    public void initializeIndexes() {
         try {
-            // Create 2dsphere index for driver locations
-            GeospatialIndex driverLocationIndex = new GeospatialIndex("currentLocation");
-            driverLocationIndex.typed(GeoSpatialIndexType.GEO_2DSPHERE);
-            mongoTemplate.indexOps("ambulance_drivers").ensureIndex(driverLocationIndex);
-
-        } catch (Exception e) {
-            // Don't throw the exception - allow application to start without indexes
+            MongoDatabase database = mongoTemplate.getDb();
+            
+            // Drop existing indexes on the collection
+            database.getCollection("ambulance_drivers").dropIndexes();
+            
+            // Create new 2dsphere index
+            Document index = new Document();
+            index.put("currentLocation", "2dsphere");
+            
+            database.getCollection("ambulance_drivers")
+                   .createIndex(index);
+            
+        } catch (Exception e) { 
+        	e.printStackTrace();
         }
     }
 }

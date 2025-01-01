@@ -23,7 +23,7 @@ public interface AmbulanceDriverRepository extends MongoRepository<AmbulanceDriv
     
    
     @Query("{'currentLocation': {" +
-            "  $nearSphere: {" +
+            " $nearSphere: {" +
             "    $geometry: {" +
             "      type: 'Point'," +
             "      coordinates: [?0, ?1]" +
@@ -31,7 +31,7 @@ public interface AmbulanceDriverRepository extends MongoRepository<AmbulanceDriv
             "    $maxDistance: ?2" +
             "  }" +
             "}}")
-     List<AmbulanceDriver> findNearbyDrivers(Double longitude, Double latitude, Double radiusInMeters);
+     List<AmbulanceDriver> findNearbyDrivers(double longitude, double latitude, double maxDistance);
     
     @Query("{ 'currentLocation.coordinates': { $geoWithin: { $centerSphere: [ [?1, ?0], ?2 ] } } }")
     List<AmbulanceDriver> findDriversWithinRadius(Double latitude, Double longitude, Double radiusInRadians);

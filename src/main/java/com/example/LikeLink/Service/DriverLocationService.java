@@ -3,6 +3,7 @@ package com.example.LikeLink.Service;
 import org.springframework.stereotype.Service;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
+import org.springframework.data.mongodb.core.geo.GeoJsonPoint;
 import org.springframework.scheduling.annotation.Scheduled;
 
 import com.example.LikeLink.Model.AmbulanceDriver;
@@ -27,27 +28,31 @@ public class DriverLocationService {
     private static final double EARTH_RADIUS_KM = 6371.0;
     private static final double DEFAULT_SEARCH_RADIUS_KM = 5.0;
 
-    @CacheEvict(value = "nearbyDrivers", allEntries = true)
-    public void updateDriverLocation(String email, Location location) {
-        AmbulanceDriver driver = driverRepository.findByEmail(email)
-            .orElseThrow(() -> new DriverNotFoundException("Driver not found with email: " + email));
-
+    public void updateDriverLocation(String driverId, double latitude, double longitude) {
+        AmbulanceDriver driver = driverRepository.findById(driverId)
+            .orElseThrow(() -> new RuntimeException("Driver not found"));
+            
+        Location location = new Location(latitude, longitude);
         driver.setCurrentLocation(location);
-        driver.setUpdatedAt(LocalDateTime.now());
-        driverRepository.save(driver);
         
-        log.info("Updated location for driver {}: {}", email, location);
+        driverRepository.save(driver);
+        log.info("Updated location for driver {}: [{}, {}]", driverId, longitude, latitude);
     }
 
-    @Cacheable(value = "nearbyDrivers", key = "#latitude + '_' + #longitude + '_' + #radiusKm")
-    public List<AmbulanceDriver> findNearbyDrivers(Double latitude, Double longitude, Double radiusKm) {
-        double radiusInRadians = radiusKm / EARTH_RADIUS_KM;
-        List<AmbulanceDriver> nearbyDrivers = driverRepository.findNearbyDrivers(longitude, latitude, radiusInRadians);
+    public List<AmbulanceDriver> findNearbyDrivers(double latitude, double longitude, double radiusKm) {
+        // Convert kilometers to meters for MongoDB
+        double radiusInMeters = radiusKm * 1000;
         
-        log.info("Found {} nearby drivers within {}km of ({}, {})", 
-            nearbyDrivers.size(), radiusKm, latitude, longitude);
+        List<AmbulanceDriver> drivers = driverRepository.findNearbyDrivers(
+            longitude, 
+            latitude, 
+            radiusInMeters
+        );
         
-        return nearbyDrivers;
+        log.info("Found {} drivers within {}km of [{}, {}]", 
+            drivers.size(), radiusKm, longitude, latitude);
+            
+        return drivers;
     }
 
     public Optional<AmbulanceDriver> findNearestDriver(Double latitude, Double longitude) {
