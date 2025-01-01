@@ -140,18 +140,7 @@ public class AmbulanceDriverService {
         log.info("Updated location for driver: {} to: {}", email, location);
     }
 
-    public List<AmbulanceDriver> findNearbyAvailableDrivers(double latitude, double longitude, double radiusInKm) {
-        double radiusInMeters = radiusInKm * 1000;
-        return driverRepository.findAvailableNearbyDrivers(longitude, latitude, radiusInMeters);
-    }
 
-    public List<AmbulanceDriver> getAvailableDrivers() {
-        return driverRepository.findByIsAvailableTrue();
-    }
-
-    public List<AmbulanceDriver> getDriversByVerificationStatus(VerificationStatus status) {
-        return driverRepository.findByVerificationStatus(status);
-    }
 
     @Transactional
     public AmbulanceDriver verifyDriver(String licenseNumber, VerificationStatus status, String comment) {
