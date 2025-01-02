@@ -61,7 +61,7 @@ public class DriverLocationService {
     @Cacheable(value = "nearbyDrivers", key = "#latitude + '-' + #longitude")
     public List<AmbulanceDriver> findNearbyDrivers(double latitude, double longitude) {
         try {
-            validateCoordinates(latitude, longitude);
+//            validateCoordinates(latitude, longitude);
 
             List<AmbulanceDriver> allDrivers = driverRepository.findAll();
             
