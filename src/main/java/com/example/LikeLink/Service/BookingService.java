@@ -9,10 +9,12 @@ import com.example.LikeLink.Exception.ResourceNotFoundException;
 import com.example.LikeLink.Model.AmbulanceDriver;
 import com.example.LikeLink.Model.Booking;
 import com.example.LikeLink.Model.Hospital;
+import com.example.LikeLink.Model.IncomingPatient;
 import com.example.LikeLink.Model.Location;
 import com.example.LikeLink.Repository.AmbulanceDriverRepository;
 import com.example.LikeLink.Repository.BookingRepository;
 import com.example.LikeLink.Repository.HospitalRepository;
+import com.example.LikeLink.Repository.IncomingPatientRepository;
 import com.example.LikeLink.dto.request.BookingRequest;
 import com.example.LikeLink.dto.response.BookingResponse;
 import com.example.LikeLink.dto.response.HospitalResponse;
@@ -34,6 +36,7 @@ public class BookingService {
     private final DriverLocationService driverLocationService;
     private final HospitalRepository hospitalRepository;
     private final AmbulanceDriverRepository driverRepository;
+    private final IncomingPatientRepository incomingPatientRepository;
     private static final double SEARCH_RADIUS_KM = 5.0;
     
     
@@ -151,6 +154,10 @@ public class BookingService {
 
             booking = bookingRepository.save(booking);
             log.info("Created booking with ID: {}", booking.getId());
+            
+            IncomingPatient incomingPatient = new IncomingPatient();
+            incomingPatient.setId(nearestHospital.getHospitalId());  // Set ID as hospital ID
+            incomingPatient.setUserId(request.getUserId());
 
             return new BookingResponse(
                 "Driver assigned successfully",

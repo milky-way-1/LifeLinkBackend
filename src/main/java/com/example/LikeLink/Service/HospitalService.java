@@ -58,15 +58,4 @@ public class HospitalService {
         return hospital.get();
     }
 
-    public List<IncomingPatient> getIncomingPatients(String hospitalId) {
-        // Verify hospital exists
-        if (!hospitalRepository.existsById(hospitalId)) {
-            return null;
-        }
-
-        return incomingPatientRepository.findByHospitalIdAndStatus(
-            hospitalId, 
-            IncomingPatient.Status.PENDING
-        );
-    }
 }

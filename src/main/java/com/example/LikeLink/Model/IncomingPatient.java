@@ -1,28 +1,18 @@
 package com.example.LikeLink.Model;
 
+import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
+
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
-@Data
 @Document(collection = "incoming_patients")
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
 public class IncomingPatient {
     @Id
-    private String id;
-    private String hospitalId;
-    private String patientName;
-    private String emergencyType;
-    private String condition;
-    private String estimatedArrivalTime;
-    private Status status;
-    private Location currentLocation;
-    private String ambulanceId;
-    private String createdAt;
-    private String updatedAt;
-
-    public enum Status {
-        PENDING,
-        ARRIVED,
-        CANCELLED
-    }
+    private String id;  // This will be the hospital ID
+    private String userId;
 }
