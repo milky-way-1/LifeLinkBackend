@@ -27,9 +27,8 @@ public class DriverLocationService {
 
     private final AmbulanceDriverRepository driverRepository;
     private static final double EARTH_RADIUS_KM = 6371.0;
-    private static final double MAX_SEARCH_RADIUS_KM = 5.0;
+    private static final double MAX_SEARCH_RADIUS_KM = 10.0;
     private static final double SUSPICIOUS_DISTANCE_KM = 100.0;
-    private static final int LOCATION_STALENESS_MINUTES = 5;
 
     @Transactional
     public Location updateDriverLocation(String driverId, double latitude, double longitude) {
@@ -63,12 +62,10 @@ public class DriverLocationService {
     public List<AmbulanceDriver> findNearbyDrivers(double latitude, double longitude) {
         try {
             validateCoordinates(latitude, longitude);
-            LocalDateTime cutoffTime = LocalDateTime.now().minusMinutes(LOCATION_STALENESS_MINUTES);
 
             List<AmbulanceDriver> allDrivers = driverRepository.findAll();
             
             return allDrivers.stream()
-                .filter(driver -> isDriverActive(driver, cutoffTime))
                 .map(driver -> new DriverDistance(driver, calculateDistance(
                     latitude,
                     longitude,
@@ -89,11 +86,6 @@ public class DriverLocationService {
         }
     }
 
-    private boolean isDriverActive(AmbulanceDriver driver, LocalDateTime cutoffTime) {
-        return driver.getCurrentLocation() != null && 
-               driver.getUpdatedAt() != null && 
-               driver.getUpdatedAt().isAfter(cutoffTime);
-    }
 
     private void validateCoordinates(double latitude, double longitude) {
         if (latitude < -90 || latitude > 90 || longitude < -180 || longitude > 180) {
