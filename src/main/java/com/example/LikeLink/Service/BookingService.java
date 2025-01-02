@@ -18,7 +18,9 @@ import com.example.LikeLink.dto.response.BookingResponse;
 import com.example.LikeLink.dto.response.HospitalResponse;
 
 import java.time.LocalDateTime;
+import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -37,21 +39,28 @@ public class BookingService {
     
     private List<AmbulanceDriver> findNearbyDrivers(Location pickupLocation) {
         try {
-            if (pickupLocation == null || pickupLocation.getCoordinates() == null) {
-                throw new BookingException("Invalid pickup location");
-            }
+            log.info("Searching for drivers near location: {}, {}", 
+                pickupLocation.getLatitude(), 
+                pickupLocation.getLongitude()
+            );
 
             List<AmbulanceDriver> drivers = driverLocationService.findNearbyDrivers(
-                    pickupLocation.getLatitude(),
+                pickupLocation.getLatitude(),
                 pickupLocation.getLongitude()
             );
             
-            log.info("Found {} drivers within {}km", drivers.size(), SEARCH_RADIUS_KM);
-            return drivers;
+            // Filter out drivers that are not available
+            List<AmbulanceDriver> availableDrivers = drivers.stream()  // Add this field to your AmbulanceDriver model
+                .collect(Collectors.toList());
+
+            log.info("Found {} total drivers, {} are available", 
+                drivers.size(), availableDrivers.size());
+
+            return availableDrivers;
 
         } catch (Exception e) {
             log.error("Error finding nearby drivers: {}", e.getMessage(), e);
-            throw new BookingException("Unable to find nearby drivers", e);
+            return Collections.emptyList();
         }
     }
     
@@ -107,64 +116,59 @@ public class BookingService {
     public BookingResponse processBooking(BookingRequest request) {
         try {
             log.info("Processing booking request for user: {}", request.getUserId());
-  
+          
 
             // First find nearest hospital
             HospitalResponse nearestHospital = findNearestHospital(request.getPickupLocation());
             log.info("Found nearest hospital: {}", nearestHospital.getHospitalName());
 
-            // Update destination location to nearest hospital
-            request.setDestinationLocation(new Location(
-                nearestHospital.getLatitude(),
-                nearestHospital.getLongitude()
-            ));
-            
-            // Find nearby drivers before creating booking
+            // Find nearby drivers BEFORE creating booking
             List<AmbulanceDriver> nearbyDrivers = findNearbyDrivers(request.getPickupLocation());
+            log.info("Found {} nearby drivers", nearbyDrivers.size());
+
             if (nearbyDrivers.isEmpty()) {
                 log.warn("No drivers found within {}km radius", SEARCH_RADIUS_KM);
                 return new BookingResponse(
                     "No drivers available",
                     null,
                     null,
-                    BookingStatus.CANCELLED.toString(),
+                    "CANCELLED",
                     null
                 );
             }
 
             // Find nearest driver
-            AmbulanceDriver nearestDriver = findNearestDriver(
-                nearbyDrivers, 
-                request.getPickupLocation()
-            );
-            
-            log.info("Found nearest driver: {}", nearestDriver.getId());
+            AmbulanceDriver nearestDriver = findNearestDriver(nearbyDrivers, request.getPickupLocation());
+            log.info("Selected nearest driver: {}", nearestDriver.getId());
 
-            // Create booking only when driver is found
-            Booking booking = new Booking();
-            booking.setDriverId(nearestDriver.getId());
-            booking.setStatus(BookingStatus.ASSIGNED);  // Set to ASSIGNED immediately
-            booking.setPickupLocation(request.getPickupLocation()); 
+            // Create and save the booking
+            Booking booking = new Booking(); 
+            booking.setUserId(request.getUserId()); 
+            booking.setDriverId(nearestDriver.getId()); 
+            booking.setPickupLocation(request.getPickupLocation());
             booking.setDestinationLocation(request.getDestinationLocation()); 
-            booking.setUserId(request.getUserId());
-            booking.setCreatedAt(LocalDateTime.now());
-            
-            
-            // Save the booking
-            Booking savedBooking = bookingRepository.save(booking);
-            log.info("Booking created successfully with ID: {}", savedBooking.getId());
+            booking.setStatus(BookingStatus.ASSIGNED); 
+
+            booking = bookingRepository.save(booking);
+            log.info("Created booking with ID: {}", booking.getId());
 
             return new BookingResponse(
                 "Driver assigned successfully",
-                savedBooking.getId(),
-                null,
-                BookingStatus.ASSIGNED.toString(),
-                nearestDriver.getId()
+                booking.getId(),
+                nearestDriver.getId(),
+                "ASSIGNED",
+                null
             );
 
         } catch (Exception e) {
             log.error("Error processing booking request: {}", e.getMessage(), e);
-            throw new BookingException("Failed to process booking request", e);
+            return new BookingResponse(
+                "Failed to process booking: " + e.getMessage(),
+                null,
+                null,
+                "CANCELLED",
+                null
+            );
         }
     }
 
