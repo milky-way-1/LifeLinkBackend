@@ -11,6 +11,7 @@ import com.example.LikeLink.Repository.HospitalRepository;
 import com.example.LikeLink.Repository.IncomingPatientRepository;
 import com.example.LikeLink.dto.request.HospitalRegistrationRequest;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class HospitalService {
@@ -52,14 +53,15 @@ public class HospitalService {
     }
 
     public Hospital getHospitalById(String hospitalId) {
-        return hospitalRepository.findById(hospitalId)
-                .orElseThrow(() -> new ResourceNotFoundException(hospitalId));
+        Optional<Hospital> hospital = hospitalRepository.findById(hospitalId);
+        if(hospital.isEmpty()) return null; 
+        return hospital.get();
     }
 
     public List<IncomingPatient> getIncomingPatients(String hospitalId) {
         // Verify hospital exists
         if (!hospitalRepository.existsById(hospitalId)) {
-            throw new ResourceNotFoundException(hospitalId);
+            return null;
         }
 
         return incomingPatientRepository.findByHospitalIdAndStatus(
