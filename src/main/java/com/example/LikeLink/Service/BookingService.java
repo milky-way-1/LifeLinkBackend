@@ -7,10 +7,13 @@ import com.example.LikeLink.Enum.BookingStatus;
 import com.example.LikeLink.Exception.BookingException;
 import com.example.LikeLink.Model.AmbulanceDriver;
 import com.example.LikeLink.Model.Booking;
+import com.example.LikeLink.Model.Hospital;
 import com.example.LikeLink.Model.Location;
 import com.example.LikeLink.Repository.BookingRepository;
+import com.example.LikeLink.Repository.HospitalRepository;
 import com.example.LikeLink.dto.request.BookingRequest;
 import com.example.LikeLink.dto.response.BookingResponse;
+import com.example.LikeLink.dto.response.HospitalResponse;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -25,6 +28,7 @@ public class BookingService {
 
     private final BookingRepository bookingRepository;
     private final DriverLocationService driverLocationService;
+    private final HospitalRepository hospitalRepository;
     private static final double SEARCH_RADIUS_KM = 5.0;
     
     
@@ -47,6 +51,59 @@ public class BookingService {
             throw new BookingException("Unable to find nearby drivers", e);
         }
     }
+    
+    public HospitalResponse findNearestHospital(Location userLocation) {
+        try {
+            log.info("Finding nearest hospital for location: {}, {}", 
+                userLocation.getLatitude(), userLocation.getLongitude());
+
+            List<Hospital> allHospitals = hospitalRepository.findAll();
+            if (allHospitals.isEmpty()) {
+                throw new BookingException("No hospitals found in the system");
+            }
+
+            Hospital nearestHospital = allHospitals.stream()
+                .min((h1, h2) -> {
+                    double dist1 = calculateDistance(
+                        h1.getLatitude(),
+                        h1.getLongitude(),
+                        userLocation.getLatitude(),
+                        userLocation.getLongitude()
+                    );
+                    double dist2 = calculateDistance(
+                        h2.getLatitude(),
+                        h2.getLongitude(),
+                        userLocation.getLatitude(),
+                        userLocation.getLongitude()
+                    );
+                    return Double.compare(dist1, dist2);
+                })
+                .orElseThrow(() -> new BookingException("No hospital found"));
+
+            double distance = calculateDistance(
+                nearestHospital.getLatitude(),
+                nearestHospital.getLongitude(),
+                userLocation.getLatitude(),
+                userLocation.getLongitude()
+            );
+
+            // Convert to HospitalResponse
+            HospitalResponse response = new HospitalResponse();
+            response.setHospitalId(nearestHospital.getId());
+            response.setHospitalName(nearestHospital.getHospitalName());
+            response.setLatitude(nearestHospital.getLatitude());
+            response.setLongitude(nearestHospital.getLongitude());
+
+            log.info("Found nearest hospital: {} at distance: {}km", 
+                nearestHospital.getHospitalName());
+
+            return response;
+
+        } catch (Exception e) {
+            log.error("Error finding nearest hospital: {}", e.getMessage(), e);
+            throw new BookingException("Unable to find nearest hospital", e);
+        }
+    }
    
 
     @Transactional
@@ -55,13 +112,20 @@ public class BookingService {
             log.info("Processing booking request for user: {}", request.getUserId());
             
             validateBookingRequest(request); 
+
+            // First find nearest hospital
+            HospitalResponse nearestHospital = findNearestHospital(request.getPickupLocation());
+            log.info("Found nearest hospital: {}", nearestHospital.getHospitalName());
+
+            // Update destination location to nearest hospital
+            request.setDestinationLocation(new Location(
+                nearestHospital.getLatitude(),
+                nearestHospital.getLongitude()
+            ));
             
             Booking booking = new Booking();
 
             List<AmbulanceDriver> nearbyDrivers = findNearbyDrivers(request.getPickupLocation());
-            if (nearbyDrivers.isEmpty()) {
-                throw new BookingException("No drivers available in your area");
-            }
             if (nearbyDrivers.isEmpty()) {
                 booking.setStatus(BookingStatus.CANCELLED);
                 bookingRepository.save(booking);
@@ -79,6 +143,7 @@ public class BookingService {
             booking.setPickupLocation(request.getPickupLocation()); 
             booking.setDestinationLocation(request.getDestinationLocation()); 
             booking.setUserId(request.getUserId());
+            booking.setCreatedAt(LocalDateTime.now());
             bookingRepository.save(booking);
 
             return new BookingResponse(
@@ -164,4 +229,5 @@ public class BookingService {
     public List<Booking> getAssignedBookings(String driverId) {
         return bookingRepository.findByDriverIdAndStatus(driverId, BookingStatus.ASSIGNED);
     }
+    
 }

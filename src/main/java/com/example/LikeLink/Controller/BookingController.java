@@ -2,7 +2,9 @@ package com.example.LikeLink.Controller;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -10,10 +12,12 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.example.LikeLink.Model.Booking;
+import com.example.LikeLink.Model.Location;
 import com.example.LikeLink.Service.BookingService;
 import com.example.LikeLink.dto.request.BookingRequest;
 import com.example.LikeLink.dto.response.ApiResponse;
 import com.example.LikeLink.dto.response.BookingResponse;
+import com.example.LikeLink.dto.response.HospitalResponse;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -50,5 +54,17 @@ public class BookingController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body(new ApiResponse<>(false, "Failed to retrieve assigned bookings", null));
         }
+    }
+    
+    @GetMapping("/nearest-hospital")
+    public ResponseEntity<HospitalResponse> findNearestHospital(
+            @RequestParam double latitude,
+            @RequestParam double longitude,
+            Authentication authentication) {
+        log.info("Finding nearest hospital for location: {}, {}", latitude, longitude);
+        
+        HospitalResponse nearestHospital = bookingService.findNearestHospital(new Location(latitude, longitude));
+        
+        return ResponseEntity.ok(nearestHospital);
     }
 }
