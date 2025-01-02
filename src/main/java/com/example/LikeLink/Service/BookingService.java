@@ -83,12 +83,6 @@ public class BookingService {
                 })
                 .orElseThrow(() -> new BookingException("No hospital found"));
 
-            double distance = calculateDistance(
-                nearestHospital.getLatitude(),
-                nearestHospital.getLongitude(),
-                userLocation.getLatitude(),
-                userLocation.getLongitude()
-            );
 
             // Convert to HospitalResponse
             HospitalResponse response = new HospitalResponse();
@@ -132,7 +126,7 @@ public class BookingService {
             if (nearbyDrivers.isEmpty()) {
                 booking.setStatus(BookingStatus.CANCELLED);
                 bookingRepository.save(booking);
-                return new BookingResponse("No drivers available", null, "No nearby drivers found");
+                return new BookingResponse("No drivers available", null, null, BookingStatus.CANCELLED.toString(), null);
             }
 
             // Find nearest driver
