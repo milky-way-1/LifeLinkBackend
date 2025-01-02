@@ -5,10 +5,12 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.example.LikeLink.Enum.BookingStatus;
 import com.example.LikeLink.Exception.BookingException;
+import com.example.LikeLink.Exception.ResourceNotFoundException;
 import com.example.LikeLink.Model.AmbulanceDriver;
 import com.example.LikeLink.Model.Booking;
 import com.example.LikeLink.Model.Hospital;
 import com.example.LikeLink.Model.Location;
+import com.example.LikeLink.Repository.AmbulanceDriverRepository;
 import com.example.LikeLink.Repository.BookingRepository;
 import com.example.LikeLink.Repository.HospitalRepository;
 import com.example.LikeLink.dto.request.BookingRequest;
@@ -29,6 +31,7 @@ public class BookingService {
     private final BookingRepository bookingRepository;
     private final DriverLocationService driverLocationService;
     private final HospitalRepository hospitalRepository;
+    private final AmbulanceDriverRepository driverRepository;
     private static final double SEARCH_RADIUS_KM = 5.0;
     
     
@@ -227,6 +230,19 @@ public class BookingService {
 
     public List<Booking> getAssignedBookings(String driverId) {
         return bookingRepository.findByDriverIdAndStatus(driverId, BookingStatus.ASSIGNED);
+    }
+    
+    public Location getDriverLocation(String driverId) {
+        log.info("Fetching location for driver: {}", driverId);
+        
+        AmbulanceDriver driver = driverRepository.findById(driverId)
+            .orElseThrow(() -> new ResourceNotFoundException("Driver not found: " + driverId));
+
+        if (driver.getCurrentLocation() == null) {
+            throw new ResourceNotFoundException("Location not found for driver: " + driverId);
+        }
+
+        return driver.getCurrentLocation();
     }
     
 }

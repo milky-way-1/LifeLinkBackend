@@ -11,12 +11,15 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.example.LikeLink.Exception.ResourceNotFoundException;
 import com.example.LikeLink.Model.Booking;
 import com.example.LikeLink.Model.Location;
 import com.example.LikeLink.Service.BookingService;
+import com.example.LikeLink.Service.DriverLocationService;
 import com.example.LikeLink.dto.request.BookingRequest;
 import com.example.LikeLink.dto.response.ApiResponse;
 import com.example.LikeLink.dto.response.BookingResponse;
+import com.example.LikeLink.dto.response.DriverLocation;
 import com.example.LikeLink.dto.response.HospitalResponse;
 
 import jakarta.validation.Valid;
@@ -31,6 +34,8 @@ import java.util.List;
 public class BookingController {
 
     private final BookingService bookingService;
+    private final DriverLocationService driverLocationService;
+
 
     @PostMapping("/request")
     public ResponseEntity<?> requestAmbulance(@Valid @RequestBody BookingRequest request) {
@@ -67,4 +72,34 @@ public class BookingController {
         
         return ResponseEntity.ok(nearestHospital);
     }
+    
+    @GetMapping("/drivers/{driverId}/location")
+    public ResponseEntity<?> getDriverLocation(
+            @PathVariable String driverId,
+            Authentication authentication) {
+        try {
+            log.info("Fetching location for driver: {}", driverId);
+            
+            Location location = bookingService.getDriverLocation(driverId); 
+            
+            DriverLocation driverLocation = new DriverLocation(location.getLatitude(), location.getLongitude());
+            
+            if (driverLocation == null) {
+                throw new ResourceNotFoundException("Driver location not found");
+            }
+
+            return ResponseEntity.ok(driverLocation);
+
+        } catch (ResourceNotFoundException e) {
+            log.warn("Driver location not found: {}", e.getMessage());
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                .body(new ApiResponse<>(false, e.getMessage(), null));
+
+        } catch (Exception e) {
+            log.error("Error fetching driver location", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(new ApiResponse<>(false, "Failed to fetch driver location", null));
+        }
+    }
+
 }
