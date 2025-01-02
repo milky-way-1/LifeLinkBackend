@@ -151,8 +151,7 @@ public class BookingService {
                 booking.getId(),
                 null,
                 BookingStatus.ASSIGNED.toString(),
-                nearestDriver.getId(),
-                calculateEstimatedTime(nearestDriver.getCurrentLocation(), request.getPickupLocation())
+                nearestDriver.getId()
             );
 
         } catch (Exception e) {

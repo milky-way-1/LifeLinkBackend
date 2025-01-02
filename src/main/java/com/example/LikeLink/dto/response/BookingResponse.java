@@ -19,16 +19,14 @@ public class BookingResponse {
     private BookingStatus status;
     private String driverId;
     private Location driverLocation;
-    private Integer estimatedTimeInMinutes; 
     
     public BookingResponse(String message, String bookingId, Object data, String status, 
-            String driverId, Integer estimatedTimeInMinutes) {
+            String driverId) {
 					this.success = true;
 					this.message = message;
 					this.bookingId = bookingId;
 					this.status = BookingStatus.valueOf(status);
 					this.driverId = driverId;
-					this.estimatedTimeInMinutes = estimatedTimeInMinutes;
 					}
 					
 					// Constructor for error response or simple messages
