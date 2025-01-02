@@ -107,8 +107,7 @@ public class BookingService {
     public BookingResponse processBooking(BookingRequest request) {
         try {
             log.info("Processing booking request for user: {}", request.getUserId());
-            
-            validateBookingRequest(request); 
+  
 
             // First find nearest hospital
             HospitalResponse nearestHospital = findNearestHospital(request.getPickupLocation());
@@ -120,13 +119,17 @@ public class BookingService {
                 nearestHospital.getLongitude()
             ));
             
-            Booking booking = new Booking();
-
+            // Find nearby drivers before creating booking
             List<AmbulanceDriver> nearbyDrivers = findNearbyDrivers(request.getPickupLocation());
             if (nearbyDrivers.isEmpty()) {
-                booking.setStatus(BookingStatus.CANCELLED);
-                bookingRepository.save(booking);
-                return new BookingResponse("No drivers available", null, null, BookingStatus.CANCELLED.toString(), null);
+                log.warn("No drivers found within {}km radius", SEARCH_RADIUS_KM);
+                return new BookingResponse(
+                    "No drivers available",
+                    null,
+                    null,
+                    BookingStatus.CANCELLED.toString(),
+                    null
+                );
             }
 
             // Find nearest driver
@@ -134,48 +137,34 @@ public class BookingService {
                 nearbyDrivers, 
                 request.getPickupLocation()
             );
+            
+            log.info("Found nearest driver: {}", nearestDriver.getId());
 
+            // Create booking only when driver is found
+            Booking booking = new Booking();
             booking.setDriverId(nearestDriver.getId());
-            booking.setStatus(BookingStatus.ASSIGNED);
+            booking.setStatus(BookingStatus.ASSIGNED);  // Set to ASSIGNED immediately
             booking.setPickupLocation(request.getPickupLocation()); 
             booking.setDestinationLocation(request.getDestinationLocation()); 
             booking.setUserId(request.getUserId());
             booking.setCreatedAt(LocalDateTime.now());
-            bookingRepository.save(booking);
+            
+            
+            // Save the booking
+            Booking savedBooking = bookingRepository.save(booking);
+            log.info("Booking created successfully with ID: {}", savedBooking.getId());
 
             return new BookingResponse(
                 "Driver assigned successfully",
-                booking.getId(),
+                savedBooking.getId(),
                 null,
                 BookingStatus.ASSIGNED.toString(),
                 nearestDriver.getId()
             );
 
         } catch (Exception e) {
-            log.error("Error processing booking request", e);
-            throw new RuntimeException("Failed to process booking request", e);
-        }
-    }
-    
-    private void validateBookingRequest(BookingRequest request) {
-        if (request == null) {
-            throw new BookingException("Booking request cannot be null");
-        }
-        
-        if (request.getUserId() == null || request.getUserId().trim().isEmpty()) {
-            throw new BookingException("User ID is required");
-        }
-        
-        if (request.getPickupLocation() == null || 
-            request.getPickupLocation().getCoordinates() == null || 
-            request.getPickupLocation().getCoordinates().length != 2) {
-            throw new BookingException("Invalid pickup location");
-        }
-
-        if (request.getDestinationLocation() == null || 
-            request.getDestinationLocation().getCoordinates() == null || 
-            request.getDestinationLocation().getCoordinates().length != 2) {
-            throw new BookingException("Invalid drop location");
+            log.error("Error processing booking request: {}", e.getMessage(), e);
+            throw new BookingException("Failed to process booking request", e);
         }
     }
 
@@ -237,6 +226,30 @@ public class BookingService {
         }
 
         return driver.getCurrentLocation();
+    }
+    
+    public List<Booking> getDriverBookings(String driverId) {
+        log.info("Fetching active bookings for driver: {}", driverId);
+        return bookingRepository.findByDriverIdAndStatus(driverId, BookingStatus.ACTIVE);
+    }
+
+    // Get specific booking details
+    public Booking getBookingDetails(String bookingId, String driverId) {
+        log.info("Fetching booking details - ID: {}, Driver: {}", bookingId, driverId);
+        return bookingRepository.findById(bookingId)
+            .filter(booking -> booking.getDriverId().equals(driverId))
+            .orElseThrow(() -> new ResourceNotFoundException(
+                "Booking not found with id: " + bookingId));
+    }
+
+    // Complete a booking
+    public Booking completeBooking(String bookingId, String driverId) {
+        log.info("Completing booking - ID: {}, Driver: {}", bookingId, driverId);
+        Booking booking = getBookingDetails(bookingId, driverId);
+        
+        booking.setStatus(BookingStatus.COMPLETED);
+        
+        return bookingRepository.save(booking);
     }
     
 }

@@ -152,4 +152,6 @@ public class AmbulanceDriverService {
         log.info("Updated verification status for driver: {} to: {}", licenseNumber, status);
         return updatedDriver;
     }
+    
+    
 }

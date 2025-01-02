@@ -101,5 +101,57 @@ public class BookingController {
                 .body(new ApiResponse<>(false, "Failed to fetch driver location", null));
         }
     }
+    @GetMapping
+    public ResponseEntity<?> getDriverBookings(Authentication authentication) {
+        try {
+            String driverId = authentication.getName();
+            List<Booking> bookings = bookingService.getDriverBookings(driverId);
+            return ResponseEntity.ok(bookings);
+        } catch (Exception e) {
+            log.error("Error fetching driver bookings", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(null);
+        }
+    }
+
+    // Get specific booking details
+    @GetMapping("/{id}")
+    public ResponseEntity<?> getBookingDetails(
+            @PathVariable String id,
+            Authentication authentication) {
+        try {
+            String driverId = authentication.getName();
+            Booking booking = bookingService.getBookingDetails(id, driverId);
+            return ResponseEntity.ok(booking);
+        } catch (ResourceNotFoundException e) {
+            log.warn("Booking not found: {}", e.getMessage());
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                .body(null);
+        } catch (Exception e) {
+            log.error("Error fetching booking details", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(null);
+        }
+    }
+
+    // Complete a booking
+    @PostMapping("/{id}/complete")
+    public ResponseEntity<?> completeBooking(
+            @PathVariable String id,
+            Authentication authentication) {
+        try {
+            String driverId = authentication.getName();
+            Booking completedBooking = bookingService.completeBooking(id, driverId);
+            return ResponseEntity.ok(completedBooking);
+        } catch (ResourceNotFoundException e) {
+            log.warn("Booking not found: {}", e.getMessage());
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                .body(null);
+        } catch (Exception e) {
+            log.error("Error completing booking", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(null);
+        }
+    }
 
 }

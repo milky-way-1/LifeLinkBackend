@@ -93,11 +93,11 @@ public class AmbulanceController {
             log.info("Updating location for driver: {} to: {}", email, locationDto);
             Location location = new Location(locationDto.getLatitude(), locationDto.getLongitude());
             driverService.updateDriverLocation(email, location);
-            return ResponseEntity.ok(new ApiResponse<>(true, "Location updated successfully", location));
+            return ResponseEntity.ok(location);
         } catch (DriverNotFoundException e) {
             log.error("Location update failed: {}", e.getMessage());
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body(new ApiResponse<>(false, e.getMessage(), null));
+                    .body(null);
         }
     }
 }
