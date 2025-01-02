@@ -57,7 +57,6 @@ public class SecurityConfig {
                 .requestMatchers("/api/insurance/**").hasRole("PATIENT")
                 .requestMatchers("/api/hospital/**").hasRole("HOSPITAL")
                 .requestMatchers("/api/ambulance/**").hasRole("AMBULANCE_DRIVER")
-                .requestMatchers("/api/bloodbank/**").hasRole("BLOOD_BANK")
                 
                 // Require authentication for all other requests
                 .anyRequest().authenticated()

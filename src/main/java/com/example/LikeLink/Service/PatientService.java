@@ -320,5 +320,13 @@ public class PatientService {
         
         log.info("Updated organ donor status for email: {}", email);
         return mapToPatientResponse(updatedPatient);
+    } 
+    
+    @Transactional
+    public PatientResponse getById(String id) { 
+    	 Patient patient = patientRepository.findById(id)
+    	            .orElseThrow(() -> new ResourceNotFoundException("Patient profile not found for email: " + id));
+
+    	        return mapToPatientResponse(patient);
     }
 }

@@ -6,15 +6,19 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 
 import com.example.LikeLink.Config.Security.Service.UserDetailsImpl;
+import com.example.LikeLink.Exception.ResourceNotFoundException;
 import com.example.LikeLink.Model.Booking;
 import com.example.LikeLink.Model.Hospital;
 import com.example.LikeLink.Model.IncomingPatient;
 import com.example.LikeLink.Repository.IncomingPatientRepository;
 import com.example.LikeLink.Service.HospitalService;
+import com.example.LikeLink.Service.PatientService;
 import com.example.LikeLink.dto.request.HospitalRegistrationRequest;
 import com.example.LikeLink.dto.response.ApiResponse;
+import com.example.LikeLink.dto.response.PatientResponse;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -31,7 +35,8 @@ import java.util.List;
 public class HospitalController {
 
     private final HospitalService hospitalService;
-    private final IncomingPatientRepository incomingPatientRepository;
+    private final IncomingPatientRepository incomingPatientRepository; 
+    private final PatientService patientService;
 
     @PostMapping("/register")
     public ResponseEntity<ApiResponse<Hospital>> registerHospital(
@@ -75,6 +80,18 @@ public class HospitalController {
                 hospitalId, e.getMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body(new ApiResponse<>(false, "Failed to fetch incoming patients", null));
+        }
+    }
+    
+    @GetMapping("/{patientId}")
+    public ResponseEntity<PatientResponse> getPatientDetails(
+            @PathVariable String patientId,
+            @RequestHeader("Authorization") String token) {
+        try {
+            PatientResponse patient = patientService.getById(patientId);
+            return ResponseEntity.ok(patient);
+        } catch (ResourceNotFoundException e) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Patient not found", e);
         }
     }
 }
