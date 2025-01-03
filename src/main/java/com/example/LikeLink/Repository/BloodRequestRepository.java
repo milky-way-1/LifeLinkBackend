@@ -10,5 +10,4 @@ public interface BloodRequestRepository extends MongoRepository<BloodRequest, St
     List<BloodRequest> findByHospitalId(String hospitalId);
     List<BloodRequest> findByStatus(String status);
     List<BloodRequest> findByHospitalIdAndStatus(String hospitalId, String status);
-    List<BloodRequest> findByStatusOrder(String status);
 }
