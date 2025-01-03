@@ -42,7 +42,7 @@ public class BloodRequestService {
 
     public List<BloodRequest> getPendingRequests() {
         log.info("Fetching all pending blood requests");
-        return bloodRequestRepository.findByStatusOrder("PENDING");
+        return bloodRequestRepository.findByStatus("PENDING");
     }
 
 
