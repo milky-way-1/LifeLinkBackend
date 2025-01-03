@@ -158,6 +158,7 @@ public class BookingService {
             IncomingPatient incomingPatient = new IncomingPatient();
             incomingPatient.setId(nearestHospital.getHospitalId());  // Set ID as hospital ID
             incomingPatient.setUserId(request.getUserId());
+            incomingPatientRepository.save(incomingPatient);
 
             return new BookingResponse(
                 "Driver assigned successfully",
@@ -261,6 +262,20 @@ public class BookingService {
         booking.setStatus(BookingStatus.COMPLETED);
         
         return bookingRepository.save(booking);
+    }
+    
+    public Booking updateBookingStatusToCompleted(String bookingId) {
+        Booking booking = bookingRepository.findById(bookingId)
+            .orElseThrow(() -> new ResourceNotFoundException("Booking not found with id: " + bookingId));
+        
+        // Update status to completed
+        booking.updateStatus(BookingStatus.COMPLETED);
+        
+        Booking updatedBooking = bookingRepository.save(booking);
+        
+        log.info("Booking {} status updated to COMPLETED", bookingId);
+        
+        return updatedBooking;
     }
     
 }

@@ -153,6 +153,28 @@ public class BookingController {
         }
     }
     
+    @PostMapping("/{bookingId}/status/complete")
+    public ResponseEntity<?> updateBookingStatusToCompleted(@PathVariable String bookingId) {
+        try {
+            Booking updatedBooking = bookingService.updateBookingStatusToCompleted(bookingId);
+            return ResponseEntity.ok( 
+                updatedBooking
+            );
+        } catch (ResourceNotFoundException e) {
+            log.warn("Booking not found: {}", e.getMessage());
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                .body(
+                    null
+                );
+        } catch (Exception e) {
+            log.error("Error updating booking status", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(
+                    null
+                );
+        }
+    }
+    
 
 
 }
