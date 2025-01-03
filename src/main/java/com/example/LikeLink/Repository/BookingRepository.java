@@ -24,7 +24,9 @@ public interface BookingRepository extends MongoRepository<Booking, String> {
     List<Booking> findActiveBookingsByUserId(String userId);
     
     // Find latest booking for a user
-    Optional<Booking> findFirstByUserIdOrderByCreatedAtDesc(String userId);
+    Optional<Booking> findFirstByUserIdOrderByCreatedAtDesc(String userId); 
+    
+    List<Booking> findByDriverId(String driverId);
     
     // Find nearby bookings
     @Query("{'pickupLocation': {" +
