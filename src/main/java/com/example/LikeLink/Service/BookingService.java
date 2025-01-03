@@ -164,7 +164,7 @@ public class BookingService {
                 booking.getId(),
                 nearestDriver.getId(),
                 "ASSIGNED",
-                null
+                nearestDriver.getId()
             );
 
         } catch (Exception e) {
