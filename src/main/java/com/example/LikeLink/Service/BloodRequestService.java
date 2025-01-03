@@ -1,6 +1,7 @@
 package com.example.LikeLink.Service;
 
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.example.LikeLink.Exception.ResourceNotFoundException;
 import com.example.LikeLink.Model.BloodRequest;
@@ -44,19 +45,31 @@ public class BloodRequestService {
         return bloodRequestRepository.findByStatusOrder("PENDING");
     }
 
-    public BloodRequest updateRequestStatus(String requestId, String status) {
-        log.info("Updating blood request status - ID: {}, Status: {}", requestId, status);
-
-        BloodRequest request = bloodRequestRepository.findById(requestId)
-            .orElseThrow(() -> new ResourceNotFoundException("Blood request not found"));
-
-        request.setStatus(status);
-
-        return bloodRequestRepository.save(request);
-    }
 
     public List<BloodRequest> getHospitalRequests(String hospitalId) {
         log.info("Fetching blood requests for hospital: {}", hospitalId);
         return bloodRequestRepository.findByHospitalIdAndStatus(hospitalId, "PENDING");
+    }
+    
+    @Transactional
+    public BloodRequest updateRequestStatus(String requestId, String newStatus) {
+        BloodRequest request = bloodRequestRepository.findById(requestId)
+            .orElseThrow(() -> new ResourceNotFoundException("Blood request not found"));
+
+        // Validate status transition
+        if (!isValidStatusTransition(request.getStatus(), newStatus)) {
+            throw new IllegalStateException("Invalid status transition");
+        }
+
+        request.setStatus(newStatus);
+        return bloodRequestRepository.save(request);
+    }
+
+    private boolean isValidStatusTransition(String currentStatus, String newStatus) {
+        // Only allow PENDING requests to be ACCEPTED or REJECTED
+        if ("PENDING".equals(currentStatus)) {
+            return "ACCEPTED".equals(newStatus) || "REJECTED".equals(newStatus);
+        }
+        return false;
     }
 }

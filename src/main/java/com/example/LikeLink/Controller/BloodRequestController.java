@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.*;
 
 import com.example.LikeLink.Model.BloodRequest;
 import com.example.LikeLink.Service.BloodRequestService;
+import com.example.LikeLink.Service.HospitalService;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -20,6 +21,7 @@ import java.util.List;
 public class BloodRequestController {
 
     private final BloodRequestService bloodRequestService;
+    private final HospitalService hospitalService;
 
     @PostMapping
     public ResponseEntity<?> createBloodRequest(

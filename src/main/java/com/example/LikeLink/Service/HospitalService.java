@@ -53,9 +53,15 @@ public class HospitalService {
     }
 
     public Hospital getHospitalById(String hospitalId) {
-        Optional<Hospital> hospital = hospitalRepository.findById(hospitalId);
+        Optional<Hospital> hospital = hospitalRepository.findByUserId(hospitalId);
         if(hospital.isEmpty()) return null; 
         return hospital.get();
+    }
+    
+    public Hospital getById(String id) { 
+    	Optional<Hospital> hospital = hospitalRepository.findById(id); 
+    	if(hospital.isEmpty()) return null; 
+    	return hospital.get();
     }
 
 }

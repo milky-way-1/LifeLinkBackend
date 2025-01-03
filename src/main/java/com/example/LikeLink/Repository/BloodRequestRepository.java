@@ -8,7 +8,6 @@ import java.util.List;
 @Repository
 public interface BloodRequestRepository extends MongoRepository<BloodRequest, String> {
     List<BloodRequest> findByHospitalId(String hospitalId);
-    List<BloodRequest> findByPatientId(String patientId);
     List<BloodRequest> findByStatus(String status);
     List<BloodRequest> findByHospitalIdAndStatus(String hospitalId, String status);
     List<BloodRequest> findByStatusOrder(String status);
