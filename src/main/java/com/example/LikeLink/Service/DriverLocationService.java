@@ -65,17 +65,7 @@ public class DriverLocationService {
 
             List<AmbulanceDriver> allDrivers = driverRepository.findAll();
             
-            return allDrivers.stream()
-                .map(driver -> new DriverDistance(driver, calculateDistance(
-                    latitude,
-                    longitude,
-                    driver.getCurrentLocation().getLatitude(),
-                    driver.getCurrentLocation().getLongitude()
-                )))
-                .filter(dd -> dd.getDistance() <= MAX_SEARCH_RADIUS_KM)
-                .sorted(Comparator.comparingDouble(DriverDistance::getDistance))
-                .map(DriverDistance::getDriver)
-                .collect(Collectors.toList());
+            return allDrivers;
 
         } catch (InvalidLocationException e) {
             log.warn(e.getMessage());
