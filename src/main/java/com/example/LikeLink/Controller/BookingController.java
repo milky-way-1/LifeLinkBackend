@@ -102,9 +102,8 @@ public class BookingController {
         }
     }
     @GetMapping
-    public ResponseEntity<?> getDriverBookings(Authentication authentication) {
+    public ResponseEntity<?> getDriverBookings(Authentication authentication, String driverId) {
         try {
-            String driverId = authentication.getName();
             List<Booking> bookings = bookingService.getDriverBookings(driverId);
             return ResponseEntity.ok(bookings);
         } catch (Exception e) {
