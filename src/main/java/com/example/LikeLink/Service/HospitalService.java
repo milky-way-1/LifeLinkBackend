@@ -64,4 +64,10 @@ public class HospitalService {
     	return hospital.get();
     }
 
+	public Hospital getHospitalByUserId(String userId) {
+		Optional<Hospital> hospital = hospitalRepository.findByUserId(userId); 
+		if(hospital.isEmpty()) return null; 
+		return hospital.get();
+	}
+
 }

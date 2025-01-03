@@ -93,5 +93,14 @@ public class HospitalController {
         } catch (ResourceNotFoundException e) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Patient not found", e);
         }
+    } 
+    
+    @GetMapping("hospital-id/{userId}")
+    public ResponseEntity<?>  getHospitalIdByUserId(@PathVariable String userId,
+    		@RequestHeader("Authorization") String token){ 
+    	
+    	Hospital hospital = hospitalService.getHospitalByUserId(userId); 
+    	if(hospital == null) return new ResponseEntity<>(HttpStatus.NOT_FOUND); 
+    	return ResponseEntity.ok(hospital.getId());
     }
 }
