@@ -223,7 +223,7 @@ public class BookingService {
     }
 
     public List<Booking> getAssignedBookings(String driverId) {
-        return bookingRepository.findByDriverIdAndStatus(driverId, BookingStatus.ASSIGNED.toString());
+        return bookingRepository.findByDriverIdAndStatus(driverId, BookingStatus.ASSIGNED);
     }
     
     public Location getDriverLocation(String driverId) {
@@ -241,7 +241,7 @@ public class BookingService {
     
     public List<Booking> getDriverBookings(String driverId) {
         log.info("Fetching active bookings for driver: {}", driverId);
-        return bookingRepository.findByDriverId(driverId);
+        return bookingRepository.findByDriverIdAndStatus(driverId, BookingStatus.ASSIGNED);
     }
 
     // Get specific booking details

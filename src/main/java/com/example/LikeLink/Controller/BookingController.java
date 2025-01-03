@@ -101,8 +101,8 @@ public class BookingController {
                 .body(new ApiResponse<>(false, "Failed to fetch driver location", null));
         }
     }
-    @GetMapping
-    public ResponseEntity<?> getDriverBookings(Authentication authentication, String driverId) {
+    @GetMapping("/{driverId}")
+    public ResponseEntity<?> getDriverBookings(Authentication authentication, @PathVariable String driverId) {
         try {
             List<Booking> bookings = bookingService.getDriverBookings(driverId);
             return ResponseEntity.ok(bookings);
