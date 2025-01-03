@@ -114,7 +114,7 @@ public class BookingController {
     }
 
     // Get specific booking details
-    @GetMapping("/{id}")
+    @GetMapping("/driver/{id}")
     public ResponseEntity<?> getBookingDetails(
             @PathVariable String id,
             Authentication authentication) {
