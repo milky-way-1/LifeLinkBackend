@@ -17,7 +17,7 @@ import com.example.LikeLink.Model.Booking;
 public interface BookingRepository extends MongoRepository<Booking, String> {
     
     // Find bookings assigned to a specific driver with given status
-    List<Booking> findByDriverIdAndStatus(String driverId, BookingStatus status);
+    List<Booking> findByDriverIdAndStatus(String driverId, String status);
     
     // Find active bookings for a user (not completed or cancelled)
     @Query("{'userId': ?0, 'status': { $nin: ['COMPLETED', 'CANCELLED'] }}")
