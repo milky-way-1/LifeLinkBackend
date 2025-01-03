@@ -83,7 +83,7 @@ public class HospitalController {
         }
     }
     
-    @GetMapping("/{patientId}")
+    @GetMapping("/patient/{patientId}")
     public ResponseEntity<PatientResponse> getPatientDetails(
             @PathVariable String patientId,
             @RequestHeader("Authorization") String token) {
