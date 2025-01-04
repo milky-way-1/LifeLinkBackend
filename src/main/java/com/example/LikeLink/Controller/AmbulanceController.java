@@ -100,4 +100,15 @@ public class AmbulanceController {
                     .body(null);
         }
     }
+    
+    @GetMapping("/driver/{email}")
+    @PreAuthorize("hasRole('AMBULANCE_DRIVER')") 
+    public ResponseEntity<?> getDriverIdByUserId(
+    		Authentication authenticaion,
+    		@PathVariable String email){ 
+    	
+    	AmbulanceDriver driver = driverService.getDriverByEmail(email);  
+    	if(driver == null) return new ResponseEntity(HttpStatus.NOT_FOUND);	
+    	return ResponseEntity.ok(driver.getId());
+    }
 }
