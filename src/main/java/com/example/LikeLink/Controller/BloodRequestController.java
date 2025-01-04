@@ -7,6 +7,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import com.example.LikeLink.Model.BloodRequest;
+import com.example.LikeLink.Model.Hospital;
 import com.example.LikeLink.Service.BloodRequestService;
 import com.example.LikeLink.Service.HospitalService;
 
@@ -77,4 +78,14 @@ public class BloodRequestController {
                 .body(null);
         }
     }
+    @GetMapping("/hospitalUI/{hospitalId}")
+    public ResponseEntity<Hospital> getHospitalDetails(@PathVariable String hospitalId) {
+        Hospital hospital = hospitalService.getHospitalById(hospitalId);
+        
+        if (hospital == null) {
+            return ResponseEntity.notFound().build();
+        }
+        
+        return ResponseEntity.ok(hospital);
+    } 
 }
