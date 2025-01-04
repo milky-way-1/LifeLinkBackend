@@ -70,33 +70,10 @@ public class HospitalService {
     	return hospital.get();
     }
 
-    public Hospital getHospitalByUserId(String userId) {
-        logger.debug("Attempting to find hospital for userId: {}", userId);
-
-        if (userId == null || userId.isEmpty()) {
-            logger.error("UserId is null or empty");
-            return null;
-        }
-
-        try {
-            Optional<Hospital> hospital = hospitalRepository.findByUserId(userId);
-            
-            if (hospital.isEmpty()) {
-                logger.error("No hospital found for userId: {}", userId);
-                return null;
-            }
-
-            Hospital foundHospital = hospital.get();
-            logger.info("Found hospital: id={}, name={} for userId={}", 
-                foundHospital.getId(), 
-                userId);
-            
-            return foundHospital;
-
-        } catch (Exception e) {
-            logger.error("Error finding hospital for userId: {}", userId, e);
-            return null;
-        }
-    }
+	public Hospital getHospitalByUserId(String userId) {
+		Optional<Hospital> hospital = hospitalRepository.findByUserId(userId); 
+		if(hospital.isEmpty()) return null; 
+		return hospital.get();
+	}
 
 }
