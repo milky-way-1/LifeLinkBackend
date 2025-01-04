@@ -101,6 +101,6 @@ public class HospitalController {
     	
     	Hospital hospital = hospitalService.getHospitalByUserId(userId); 
     	if(hospital == null) return new ResponseEntity<>(HttpStatus.NOT_FOUND); 
-    	return ResponseEntity.ok(hospital.getId());
+    	return ResponseEntity.ok(hospital);
     }
 }
