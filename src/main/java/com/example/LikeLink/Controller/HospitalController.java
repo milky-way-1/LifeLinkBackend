@@ -95,7 +95,7 @@ public class HospitalController {
         }
     } 
     
-    @GetMapping("hospital-id/{userId}")
+    @GetMapping("/hospital-id/{userId}")
     public ResponseEntity<?>  getHospitalIdByUserId(
     		@RequestHeader("Authorization") String token,
     		@PathVariable String userId){ 
