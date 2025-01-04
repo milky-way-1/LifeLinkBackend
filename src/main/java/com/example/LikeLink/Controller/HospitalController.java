@@ -96,8 +96,9 @@ public class HospitalController {
     } 
     
     @GetMapping("hospital-id/{userId}")
-    public ResponseEntity<?>  getHospitalIdByUserId(@PathVariable String userId,
-    		@RequestHeader("Authorization") String token){ 
+    public ResponseEntity<?>  getHospitalIdByUserId(
+    		@RequestHeader("Authorization") String token,
+    		@PathVariable String userId){ 
     	
     	Hospital hospital = hospitalService.getHospitalByUserId(userId); 
     	if(hospital == null) return new ResponseEntity<>(HttpStatus.NOT_FOUND); 

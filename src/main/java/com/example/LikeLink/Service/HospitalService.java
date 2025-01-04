@@ -1,5 +1,6 @@
 package com.example.LikeLink.Service;
 
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -10,6 +11,9 @@ import com.example.LikeLink.Model.IncomingPatient;
 import com.example.LikeLink.Repository.HospitalRepository;
 import com.example.LikeLink.Repository.IncomingPatientRepository;
 import com.example.LikeLink.dto.request.HospitalRegistrationRequest;
+
+import ch.qos.logback.classic.Logger;
+
 import java.util.List;
 import java.util.Optional;
 
@@ -21,6 +25,8 @@ public class HospitalService {
 
     @Autowired
     private IncomingPatientRepository incomingPatientRepository;
+    
+    private static final org.slf4j.Logger logger = LoggerFactory.getLogger(HospitalService.class);
 
     @Transactional
     public Hospital registerHospital(String userId, HospitalRegistrationRequest request) {
@@ -53,7 +59,7 @@ public class HospitalService {
     }
 
     public Hospital getHospitalById(String hospitalId) {
-        Optional<Hospital> hospital = hospitalRepository.findByUserId(hospitalId);
+        Optional<Hospital> hospital = hospitalRepository.findById(hospitalId);
         if(hospital.isEmpty()) return null; 
         return hospital.get();
     }
@@ -64,10 +70,33 @@ public class HospitalService {
     	return hospital.get();
     }
 
-	public Hospital getHospitalByUserId(String userId) {
-		Optional<Hospital> hospital = hospitalRepository.findByUserId(userId); 
-		if(hospital.isEmpty()) return null; 
-		return hospital.get();
-	}
+    public Hospital getHospitalByUserId(String userId) {
+        logger.debug("Attempting to find hospital for userId: {}", userId);
+
+        if (userId == null || userId.isEmpty()) {
+            logger.error("UserId is null or empty");
+            return null;
+        }
+
+        try {
+            Optional<Hospital> hospital = hospitalRepository.findByUserId(userId);
+            
+            if (hospital.isEmpty()) {
+                logger.error("No hospital found for userId: {}", userId);
+                return null;
+            }
+
+            Hospital foundHospital = hospital.get();
+            logger.info("Found hospital: id={}, name={} for userId={}", 
+                foundHospital.getId(), 
+                userId);
+            
+            return foundHospital;
+
+        } catch (Exception e) {
+            logger.error("Error finding hospital for userId: {}", userId, e);
+            return null;
+        }
+    }
 
 }
