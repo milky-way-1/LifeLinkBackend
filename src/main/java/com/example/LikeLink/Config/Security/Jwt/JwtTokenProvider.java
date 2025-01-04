@@ -29,10 +29,10 @@ public class JwtTokenProvider {
     private String jwtSecret;
 
     @Value("${jwt.accessToken.expiration}")
-    private int accessTokenExpiration;
+    private long accessTokenExpiration;
 
     @Value("${jwt.refreshToken.expiration}")
-    private int refreshTokenExpiration;
+    private long refreshTokenExpiration;
 
     public String generateAccessToken(UserDetailsImpl userPrincipal) {
         return generateToken(userPrincipal, accessTokenExpiration);
