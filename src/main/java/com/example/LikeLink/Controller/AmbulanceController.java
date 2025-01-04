@@ -109,6 +109,6 @@ public class AmbulanceController {
     	
     	AmbulanceDriver driver = driverService.getDriverByEmail(email);  
     	if(driver == null) return new ResponseEntity(HttpStatus.NOT_FOUND);	
-    	return ResponseEntity.ok(driver.getId());
+    	return ResponseEntity.ok(driver);
     }
 }
