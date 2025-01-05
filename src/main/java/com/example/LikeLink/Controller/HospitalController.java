@@ -13,11 +13,15 @@ import com.example.LikeLink.Exception.ResourceNotFoundException;
 import com.example.LikeLink.Model.Booking;
 import com.example.LikeLink.Model.Hospital;
 import com.example.LikeLink.Model.IncomingPatient;
+import com.example.LikeLink.Model.Insurance;
 import com.example.LikeLink.Repository.IncomingPatientRepository;
+import com.example.LikeLink.Service.AuthService;
 import com.example.LikeLink.Service.HospitalService;
+import com.example.LikeLink.Service.InsuranceService;
 import com.example.LikeLink.Service.PatientService;
 import com.example.LikeLink.dto.request.HospitalRegistrationRequest;
 import com.example.LikeLink.dto.response.ApiResponse;
+import com.example.LikeLink.dto.response.InsuranceResponse;
 import com.example.LikeLink.dto.response.PatientResponse;
 
 import jakarta.validation.Valid;
@@ -36,7 +40,9 @@ public class HospitalController {
 
     private final HospitalService hospitalService;
     private final IncomingPatientRepository incomingPatientRepository; 
-    private final PatientService patientService;
+    private final PatientService patientService; 
+    private final AuthService authService; 
+    private final InsuranceService insuranceService;
 
     @PostMapping("/register")
     public ResponseEntity<ApiResponse<Hospital>> registerHospital(
@@ -64,10 +70,27 @@ public class HospitalController {
         }
         
         return ResponseEntity.ok(hospital);
-    } 
+    }  
     
-
-
+    @GetMapping("/patient/{userId}")
+    public ResponseEntity<?> getPatientDetailsByUserId(@PathVariable String userId){ 
+    	String email = authService.getEmailByUserId(userId); 
+    	if(email == null) return new ResponseEntity(HttpStatus.NOT_FOUND);
+    	
+    	PatientResponse patientResponse = patientService.getProfile(email); 
+    	if(patientResponse == null) return new ResponseEntity(HttpStatus.NOT_FOUND);
+    	return ResponseEntity.ok(patientResponse);
+    	
+    }
+    
+    @GetMapping("/patient/insurance/{userId}") 
+    public ResponseEntity<?> getInsurancesByUserId(@PathVariable String userId){ 
+    	List<InsuranceResponse> insurances = insuranceService.getActiveInsuranceByUserId(userId); 
+    	if(insurances == null) return new ResponseEntity(HttpStatus.NOT_FOUND); 
+    	
+    	return ResponseEntity.ok(insurances);
+    }
+    
     @GetMapping("/{hospitalId}/incoming-patients")
     public ResponseEntity<?> getIncomingPatients(
             @PathVariable String hospitalId,

@@ -113,6 +113,17 @@ public class InsuranceService {
                 .map(this::mapToResponse)
                 .collect(Collectors.toList());
     }
+    
+    public List<InsuranceResponse> getActiveInsuranceByUserId(String userId) {
+
+        LocalDate now = LocalDate.now();
+        return insuranceRepository.findByUserId(userId)
+                .stream()
+                .filter(insurance -> isActive(insurance, now))
+                .map(this::mapToResponse)
+                .collect(Collectors.toList());
+    }
+    
 
     public List<InsuranceResponse> getInsuranceByType(InsuranceType type, String userEmail) {
         User user = userRepository.findByEmail(userEmail)

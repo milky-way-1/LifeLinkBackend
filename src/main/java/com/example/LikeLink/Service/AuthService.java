@@ -2,6 +2,9 @@ package com.example.LikeLink.Service;
 
 
 import lombok.RequiredArgsConstructor;
+
+import java.util.Optional;
+
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -45,6 +48,12 @@ public class AuthService {
         userRepository.save(user);
 
         return ResponseEntity.ok(new MessageResponse("User registered successfully!"));
+    } 
+    
+    public String getEmailByUserId(String userId) { 
+    	Optional<User> user = userRepository.findById(userId); 
+    	if(user.isEmpty()) return null; 
+    	return user.get().getEmail();
     }
 
     public JwtResponse authenticateUser(LoginRequest loginRequest) {
