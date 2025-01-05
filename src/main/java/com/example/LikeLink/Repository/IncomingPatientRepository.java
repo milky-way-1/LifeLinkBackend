@@ -11,5 +11,6 @@ import java.util.Optional;
 @Repository
 public interface IncomingPatientRepository extends MongoRepository<IncomingPatient, String> {
     Optional<IncomingPatient> findByUserId(String userId);
-    List<IncomingPatient> findIncomingPatientsById(String Id);
+    List<IncomingPatient> findIncomingPatientsById(String Id); 
+    List<IncomingPatient> findByHospitalId(String id);
 }

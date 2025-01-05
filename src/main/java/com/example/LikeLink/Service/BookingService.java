@@ -156,7 +156,7 @@ public class BookingService {
             log.info("Created booking with ID: {}", booking.getId());
             
             IncomingPatient incomingPatient = new IncomingPatient();
-            incomingPatient.setId(nearestHospital.getHospitalId());  // Set ID as hospital ID
+            incomingPatient.setHospitalId(nearestHospital.getHospitalId());  // Set ID as hospital ID
             incomingPatient.setUserId(request.getUserId());
             incomingPatientRepository.save(incomingPatient);
 

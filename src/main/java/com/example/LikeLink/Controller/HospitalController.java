@@ -96,7 +96,7 @@ public class HospitalController {
             @PathVariable String hospitalId,
             Authentication authentication) {
         try {
-            List<IncomingPatient> patients = incomingPatientRepository.findIncomingPatientsById(hospitalId);
+            List<IncomingPatient> patients = incomingPatientRepository.findByHospitalId(hospitalId);
             return ResponseEntity.ok(patients);
         } catch (Exception e) {
             log.error("Error fetching incoming patients for hospital {}: {}", 

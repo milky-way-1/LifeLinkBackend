@@ -13,6 +13,7 @@ import org.springframework.data.mongodb.core.mapping.Document;
 @AllArgsConstructor
 public class IncomingPatient {
     @Id
-    private String id;  // This will be the hospital ID
+    private String id;  
     private String userId;
+    private String hospitalId;
 }
