@@ -72,7 +72,7 @@ public class HospitalController {
         return ResponseEntity.ok(hospital);
     }  
     
-    @GetMapping("/patient/{userId}")
+    @GetMapping("/patient/info/{userId}")
     public ResponseEntity<?> getPatientDetailsByUserId(@PathVariable String userId){ 
     	String email = authService.getEmailByUserId(userId); 
     	if(email == null) return new ResponseEntity(HttpStatus.NOT_FOUND);
