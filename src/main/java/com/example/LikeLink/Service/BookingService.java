@@ -7,14 +7,20 @@ import com.example.LikeLink.Enum.BookingStatus;
 import com.example.LikeLink.Exception.BookingException;
 import com.example.LikeLink.Exception.ResourceNotFoundException;
 import com.example.LikeLink.Model.AmbulanceDriver;
+import com.example.LikeLink.Model.BloodRequest;
 import com.example.LikeLink.Model.Booking;
 import com.example.LikeLink.Model.Hospital;
 import com.example.LikeLink.Model.IncomingPatient;
 import com.example.LikeLink.Model.Location;
+import com.example.LikeLink.Model.Patient;
+import com.example.LikeLink.Model.User;
 import com.example.LikeLink.Repository.AmbulanceDriverRepository;
+import com.example.LikeLink.Repository.BloodRequestRepository;
 import com.example.LikeLink.Repository.BookingRepository;
 import com.example.LikeLink.Repository.HospitalRepository;
 import com.example.LikeLink.Repository.IncomingPatientRepository;
+import com.example.LikeLink.Repository.PatientRepository;
+import com.example.LikeLink.Repository.UserRepository;
 import com.example.LikeLink.dto.request.BookingRequest;
 import com.example.LikeLink.dto.response.BookingResponse;
 import com.example.LikeLink.dto.response.HospitalResponse;
@@ -22,6 +28,7 @@ import com.example.LikeLink.dto.response.HospitalResponse;
 import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import lombok.RequiredArgsConstructor;
@@ -36,7 +43,11 @@ public class BookingService {
     private final DriverLocationService driverLocationService;
     private final HospitalRepository hospitalRepository;
     private final AmbulanceDriverRepository driverRepository;
-    private final IncomingPatientRepository incomingPatientRepository;
+    private final IncomingPatientRepository incomingPatientRepository; 
+    private final UserRepository userRepository; 
+    private final AuthService authService; 
+    private final PatientRepository patientRepository;
+    private final BloodRequestRepository bloodRequestRepository;
     private static final double SEARCH_RADIUS_KM = 5.0;
     
     
@@ -158,8 +169,27 @@ public class BookingService {
             IncomingPatient incomingPatient = new IncomingPatient();
             incomingPatient.setHospitalId(nearestHospital.getHospitalId());  // Set ID as hospital ID
             incomingPatient.setUserId(request.getUserId());
-            incomingPatientRepository.save(incomingPatient);
+            incomingPatientRepository.save(incomingPatient); 
+            
+            String userEmail = authService.getEmailByUserId(request.getUserId());  
+            
+            Optional<Patient> patient = patientRepository.findByEmail(userEmail); 
+            if(!patient.isEmpty()) { 
+            	Hospital hospital = hospitalRepository.findById(nearestHospital.getHospitalId())
+                        .orElseThrow(() -> new ResourceNotFoundException("Hospital not found"));
 
+
+                    BloodRequest brequest = BloodRequest.builder()
+                        .hospitalId(hospital.getId())
+                        .hospitalName(hospital.getHospitalName())
+                        .phoneNumber(hospital.getPhoneNumber())
+                        .address(hospital.getAddress())
+                        .bloodType(patient.get().getBloodType().toString())
+                        .status("PENDING")
+                        .build();
+
+                    bloodRequestRepository.save(brequest);
+            }
             return new BookingResponse(
                 "Driver assigned successfully",
                 booking.getId(),
